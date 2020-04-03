@@ -1,5 +1,4 @@
 function geraPopulacaoInicial() {
-    testaMatriz();
     customLog("POPULACAO INICIAL", 'info');
 
     var populacaoInicial = [];
@@ -261,6 +260,7 @@ function main() {
     }
     
     var melhor = retornaMelhor(populacaoInicial);
+    testaMatriz();
 }
 
 function testaMatriz() {
