@@ -40,5 +40,5 @@ var iteracao = 0;
 var totalPopulacao = 700;
 var cidadeInicial = 1;
 var localCorte = totalCidades / 2;
-var taxaMutacao = 30;
+var taxaMutacao = 20;
 var preservacao = 2; //total de individuos a serem preservados em cada geracao

@@ -1,163 +1,227 @@
-/*
-	
-	Language: Português-BR
-	Author: Hanor Sátiro Cintra
-	
-	Resumo - 
-	Este exemplo abaixo é o algoritmo genético implementado. Os passos bases do algoritmo genético estão descritos no site: http://www.obitko.com/tutorials/genetic-algorithms/
-	Objetivo - 
-	O algoritmo genético é extremamente eficaz para uma série de fatores e aplicações, porém, para o exemplo abaixo, defino um número em que quero chegar e executo o algoritmo 
-	genético para tentar obter em 50 gerações o número almejado.
-*/
+function geraPopulacaoInicial() {
+    var populacaoInicial = [];
 
+    for (var i = 0; i < totalPopulacao; i++) {
+        populacaoInicial.push(geraIndividuos());
+    }
 
-var objective = 80;
-var maxGerations = 1;
-var iterator = 0;
-var genesis = [];
-var maxCromons = 10;
-var maxInterval = 85;
-
-function cromonStruct() {
-    this.number = null;
-    this.pontuation = null;
+    return populacaoInicial;
 }
 
-//Primeiro passo do algoritmo genético: Criar uma população genêsis(população inicial)
+function geraIndividuos() {
+    var novoIndividuo = [];
+    var j = 1;
+    var distancia;
 
-for (var i = 0; i < maxCromons; i++) {
-    var newCromon = new cromonStruct();
-    newCromon.number = Math.floor((Math.random() * maxInterval) + 1) // número aleatório entre 1 e 100;
-    genesis.push(newCromon);
+    novoIndividuo.push(cidadeInicial);
+
+    do {
+        var ran = Math.floor(Math.random() * (totalCidades));
+
+        if (novoIndividuo.indexOf(arrCidades[ran]) == -1) {
+            novoIndividuo.push(arrCidades[ran]);
+            j++;
+        }
+    } while (j < totalCidades);
+
+    novoIndividuo.push(cidadeInicial);
+    distancia = calculaDistancia(novoIndividuo);
+    novoIndividuo.push(distancia);
+
+    return novoIndividuo;
 }
-//genesis está completa. Segundo Passo: Chamar a função do AG passando a população inicial
 
+function dividePopulacao(populacao) {
+    var popMelhores = [];
+    var n = Math.trunc(populacao.length / 2);
+    var p = 0;
 
-var algoritmoGenetico = {
-    init: function (population) {
-        var self = this;
-        console.log("POPULACAO INICIAL");
-//        console.table(population);
-        self.setup(population);
-    },
-    setup: function (population) {
-        var self = this;
-        if (iterator < maxGerations)
-            self.geneticArc(population);
-        else
-            self.showResult(population)
-    },
-    adequationArc: function (cromon) {
-        var self = this;
-        //conforme a proximidade com a melhor resposta, o valor da pontuação é maior
-        var diff = objective - cromon.number;
-        if (diff < 0)
-            diff = diff * -1;
+    populacao.sort(ordenar);
 
-        cromon.pontuation = 100 - diff;
-        return cromon.pontuation;
-    },
-    geneticArc: function (population) {
-        var self = this;
-        var newPopulation = [];
-        var maxPontuation = 0;
-        
-        console.log("popolacao antiga");
-        console.table(population);
+    for (var i = 0; i < totalPopulacao / 2; i++) {
+        popMelhores.push(populacao[i]);
+    }
 
-        //Está é a função arquiteta do AG. Terceiro Passo: Cada individuo da população deve receber uma pontuação. 
-        //A pontuação é dada conforme o nível de proximidade com a melhor resposta
-        console.log("PONTUANDO");
-        for (var i = 0; i < population.length; i++) {
-            var cromon = population[i];
-            maxPontuation += self.adequationArc(cromon);
+    return popMelhores;
+}
+
+function selecaoCrossover(melhoresInd) {
+    customLog("Melhor da geracao: " + melhoresInd[0], "Orange");
+
+    var tamMelhores = melhoresInd.length;
+    var popTemporaria = [];
+
+    novaPopulacao = [];
+
+    for (var i = 0; i < preservacao; i++) {
+        novaPopulacao.push(melhoresInd[i]);
+    }
+
+    for (var i = 0; i < totalPopulacao - preservacao; i++) {
+        var ran1 = Math.floor(Math.random() * (melhoresInd.length));;
+        var ran2;
+        var pai;
+        var mae;
+
+        do {
+            ran2 = Math.floor(Math.random() * (melhoresInd.length));
+        } while (ran2 == ran1);
+
+        pai = melhoresInd[ran1];
+        mae = melhoresInd[ran2];
+
+        filho1 = crossover(pai, mae);
+        filho1 = mutacao(filho1);
+        filho1.push(calculaDistancia(filho1));
+
+        filho2 = crossover(mae, pai);
+        filho2 = mutacao(filho2);
+        filho2.push(calculaDistancia(filho2));
+
+        popTemporaria.push(filho1);
+        popTemporaria.push(filho2);
+    }
+
+    for (var i = 0; i < totalPopulacao - preservacao; i++) {
+        novaPopulacao.push(popTemporaria[i]);
+    }
+
+    return novaPopulacao;
+}
+
+function crossover(pai1, pai2) {
+    var filho = [];
+
+    for (var i = 0; i < localCorte; i++) {
+        filho.push(pai1[i]);
+    }
+
+    for (var i = 0; i < totalCidades; i++) {
+        if (filho.indexOf(pai2[i]) == -1) {
+            filho.push(pai2[i]);
         }
+    }
 
-        console.log("ORDENANDO");
-        
-        //ordena do mais pontuado ao menos pontuado
-        population.sort(function (a, b) {
-            if (a.pontuation > b.pontuation) {
-                return -1;
-            }
-            if (a.pontuation < b.pontuation) {
-                return 1;
-            }
-            return 0;
-        })
-        
-        console.table(population);
-        
-        console.log("CRIANDO NOVA POPULACAO");
+    filho.push(cidadeInicial);
 
-        if (iterator < maxGerations && population[0].number != objective) {
-            //Individuos receberam pontuações e tb, foram ordenados. Quarto passo: Hereditariedade
+    return filho;
+}
 
-            //o tamanho da minha população é 10. Assim como na natureza, aquilo que se é bom geralmente é preservado, por está razão, os dois melhores individuos
-            //serão mantidos para a proxima população. HEREDITARIEDADE!		
-            newPopulation.push(population[0]);
-            newPopulation.push(population[1]);
-            
-            console.log("melhores adicioandos");
-            console.table(newPopulation);
+function mutacao(filho) {
+    var roleta = Math.floor(Math.random() * (100));
 
-            //Os dois melhores da população foram salvos. Quinto Passo: O Cruzamento
+    if (roleta <= taxaMutacao) {
+        var posicao;
+        var gene = [];
+        var g1, g2;
 
-            for (var i = 0; i < (maxCromons - 2); i++) {
-                // é necessário obter um pai
-                var father = self.getParents(population, maxPontuation);
-                // é necessário obter uma mãe que seja diferente do pai
-                var mother = self.getParents(population, maxPontuation, father); // obtenho um individuo para ser a mãe se o mesmo for diferente do pai.
-                var newCromon = new cromonStruct();
-                //Já sei que são os pais. Sexto passo: Mutação
-                var randMutation = Math.floor((Math.random() * 100) + 1); // um bom valor para mutação está entre 0.5 e 1 %;
-                if (randMutation == 10) //se for 1, mutação :)
-                {
-                    newCromon.number = Math.floor((Math.random() * maxInterval) + 1)
-                    console.log("ARRRRRRRRRRRRRRYHHHHHHHHHGGGGGGGGGGGGGG MUTAÇÃO!!!  Sentinelas:[ON] auhsdhuasd");
-                } else {
-                    //					console.log("Pai:"+father.number)
-                    //					console.log("Mãe: "+mother.number)
-                    newCromon.number = Math.floor((father.number + mother.number) / 2);
-                }
-                newPopulation.push(newCromon);
-                console.table(newPopulation);
-            }
-            iterator++;
-            
-            console.log("reiniando AG");
-            console.log("POPULCAO CRIADA");
-            console.table(newPopulation);
-            
-            self.geneticArc(newPopulation);
-        } else {
-            self.showResult(population);
+        g1 = Math.floor(Math.random() * ((totalCidades - 1) - 1 + 1) + 1);
+
+        do {
+            g2 = Math.floor(Math.random() * ((totalCidades - 1) - 1 + 1) + 1);
         }
+        while (g2 == g1);
 
-    },
-    getParents: function (population, maxPontuation, father) {
-        var self = this;
-        var rand = Math.floor((Math.random() * maxPontuation) + 1);
-        var max = 0;
-        for (var i = 0; i < population.length; i++) {
-            max += population[i].pontuation;
-            if (rand <= max) {
-                if (father && population[i] == father) {
-                    return self.getParents(population, maxPontuation, father);
-                } else {
-                    return population[i];
-                }
-            }
+        var ram = Math.floor(Math.random() * (2));
+
+        var m1 = filho[g1];
+        var m2 = filho[g2];
+
+        filho[g1] = m2;
+        filho[g2] = m1;
+    }
+
+    return filho;
+}
+
+function retornaMelhor(populacao) {
+    populacao.sort(ordenar);
+
+    return populacao[0];
+}
+
+function calculaDistancia(distancias) {
+    var distTotal = 0;
+
+    for (var i = 0; i < totalCidades; i++) {
+        var cid1 = arrCidades.indexOf(distancias[i]);
+        var cid2 = arrCidades.indexOf(distancias[i + 1]);
+
+        distTotal = distTotal + mDist[cid1][cid2];
+
+        if (mDist[cid1][cid2] == 0) {
+            customLog("ALERTA DISTANCIA IGUAL A ZERO", "error");
         }
-    },
-    showResult: function (population) {
-        console.log("Individuo máximo: " + population[0].number + "\nNúmero de Interações: " + iterator + "\nPontuação: " + population[0].pontuation);
-        
-        console.log("populacao final");
-        console.table(population);
-        
+    }
+
+    return distTotal;
+}
+
+function ordenar(a, b) {
+    if (a[totalCidades + 1] === b[totalCidades + 1]) {
+        return 0;
+    } else {
+        return (a[totalCidades + 1] < b[totalCidades + 1]) ? -1 : 1;
     }
 }
 
-var newAg = Object.create(algoritmoGenetico);
-newAg.init(genesis)
+function customLog(message, color = 'black') {
+    switch (color) {
+        case 'success':
+            color = 'Green'
+            break
+        case 'info':
+            color = 'Blue'
+            break;
+        case 'error':
+            color = 'Red'
+            break;
+        case 'warning':
+            color = 'Orange'
+            break;
+        default:
+            color = color
+    }
+
+    if (color == "Orange") {
+        console.log(`%c${message}`, `color:${color}`);
+    }
+
+    //    if (color == "Red") {
+    //        console.log(`%c${message}`, `color:${color}`);
+    //    }
+
+    //    console.log(`%c${message}`, `color:${color}`);
+}
+
+function main() {
+    var populacaoInicial = geraPopulacaoInicial();
+
+    for (var i = 0; i < geracoes; i++) {
+        var melhoresIndividuos = dividePopulacao(populacaoInicial);
+        var novaPopulacao = selecaoCrossover(melhoresIndividuos);
+
+        populacaoInicial = novaPopulacao;
+    }
+
+    var melhor = retornaMelhor(populacaoInicial);
+    testaMatriz();
+}
+
+function testaMatriz() {
+    var msg = "";
+
+    for (var i = 0; i < mDist.length; i++) {
+        for (var j = 0; j < mDist[0].length; j++) {
+            msg += mDist[i][j] + " | ";
+
+            if (mDist[i][j] != mDist[j][i]) {
+                customLog("ERRO NA MATRIZ: " + i + "-" + j);
+            }
+        }
+
+        msg += "\n"
+    }
+}
+
+main();
