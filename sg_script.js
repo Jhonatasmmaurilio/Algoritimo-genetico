@@ -7,12 +7,12 @@
 //configurações
 var arrDistancia = [];
 var cidadeInicial = 1;
-var totalPopulacao = 100;
+var totalPopulacao = 50;
 var localCorte = 6;
 var taxaMutacao = 10;
 var criterioParada = 5000; //total de geracoes sem novos otimos encontrados
 var infinito = 1000000000;
-var geracoes = 1000;
+var geracoes = 1;
 
 var resultadosGeracoes = []
 var novaPopulacao = [];
@@ -32,8 +32,8 @@ function geraPopulacaoInicial() {
         arrPopulacao.push(geraIndividuos());
     }
 
-    //        console.log("%cPOPULACAO INICIAL", 'color: red');
-    //        console.table(arrPopulacao);
+    console.log("%cPOPULACAO INICIAL", 'color: red');
+//    console.table(arrPopulacao);
     //        console.log("%cDISTANCIAS ", 'color: red');
     //        console.table(arrDistancia);
 }
@@ -99,8 +99,8 @@ function dividePopulacao(populacao, distancias) {
         cloneDistancias[p] = infinito;
     }
 
-    //    console.log("%cmelhores: ", 'color: green');
-    //    console.table(arrMelhores);
+//        console.log("%cmelhores: ", 'color: green');
+//        console.table(arrMelhores);
 
     //    console.table(cloneDistancias);
 
@@ -112,8 +112,8 @@ function dividePopulacao(populacao, distancias) {
         }
     }
 
-    //    console.log("%cpiores: ", 'color: green');
-    //    console.table(arrPiores);
+//        console.log("%cpiores: ", 'color: green');
+//        console.table(arrPiores);
 
     selecaoCrossover();
 }
@@ -129,11 +129,6 @@ function selecaoCrossover() {
     var roleta = Math.floor(Math.random() * (100));
     var tamPopulacao = arrPopulacao.length;
     var posMelhor;
-    var totalDistancias = 0;
-
-    for (var i = 0; i < totalPopulacao; i++) {
-        totalDistancias = totalDistancias + arrDistancia[i];
-    }
 
     //    var ran = 0;
     //
@@ -162,14 +157,16 @@ function selecaoCrossover() {
 
     filho1 = crossover(pai1, pai2);
 
-    console.log("%cNovo filho 1:", "color: green", filho1 + ": (" + calculaDistancia(filho1) + ")");
+//    console.log("%cNovo filho 1:", "color: green", filho1 + ": (" + calculaDistancia(filho1) + ")");
 
     filho2 = crossover(pai2, pai1);
 
-    console.log("%cNovo filho 2:", "color: green", filho2 + ": (" + calculaDistancia(filho2) + ")");
+//    console.log("%cNovo filho 2:", "color: green", filho2 + ": (" + calculaDistancia(filho2) + ")");
 
     mutacao();
-    geraNovaPopulacao(pai1, pai2);
+    
+    
+    geraNovaPopulacao(pai1, pai2);;
 }
 
 function crossover(pai1, pai2) {
@@ -341,7 +338,6 @@ function main() {
     var i = 0;
 
     do {
-
         dividePopulacao(arrPopulacao, arrDistancia);
         //        resultadosGeracoes.push(retornaMelhor());
         console.log("%c======================================================== G" + i, "color:red");
