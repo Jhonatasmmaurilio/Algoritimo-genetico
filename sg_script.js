@@ -12,7 +12,7 @@ var localCorte = 6;
 var taxaMutacao = 20;
 var criterioParada = 5000; //total de geracoes sem novos otimos encontrados
 var infinito = 1000000000;
-var geracoes = 2000;
+var geracoes = 100;
 
 var resultadosGeracoes = []
 var novaPopulacao = [];
