@@ -1,57 +1,24 @@
-/*Premissia
--A ultima cidade tem que ser a inicial
--Não deve haver cidades repetidas
--As distancias nao podem passar de um valor de infinito
-*/
-
-//configurações
-var arrDistancia = [];
-var cidadeInicial = 1;
-var totalPopulacao = 100;
-var localCorte = 6;
-var taxaMutacao = 20;
-var criterioParada = 5000; //total de geracoes sem novos otimos encontrados
-var infinito = 1000000000;
-var geracoes = 100;
-
-var resultadosGeracoes = []
-var novaPopulacao = [];
-var arrPopulacao = [];
-var arrMelhores = [];
-var arrPiores = [];
-var filho1 = [];
-var filho2 = [];
-var eleitoMelhor;
-var eleitoPior;
-var BEST = infinito; //infinito
-var ARRBEST = []
-var geracoesSemOtimo = 0;
-
 function geraPopulacaoInicial() {
+    testaMatriz();
+    customLog("POPULACAO INICIAL", 'info');
+
+    var populacaoInicial = [];
+
     for (var i = 0; i < totalPopulacao; i++) {
-        arrPopulacao.push(geraIndividuos());
+        populacaoInicial.push(geraIndividuos());
     }
 
-    console.log("%cPOPULACAO INICIAL", 'color: red');
-    //    console.table(arrPopulacao);
-    //        console.log("%cDISTANCIAS ", 'color: red');
-    //        console.table(arrDistancia);
+    //        console.table(populacaoInicial);
+
+    return populacaoInicial;
 }
 
 function geraIndividuos() {
     var novoIndividuo = [];
+    var j = 1;
+    var distancia;
 
     novoIndividuo.push(cidadeInicial);
-
-    var j = 1;
-
-    //    for(var i = 1;i<totalCidades;i++) {
-    //        var ran = Math.floor(Math.random() * (totalCidades));
-    //        
-    //        if (novoIndividuo.indexOf(arrCidades[ran]) == -1) {
-    //            novoIndividuo.push(arrCidades[ran]);
-    //        }
-    //    }
 
     do {
         var ran = Math.floor(Math.random() * (totalCidades));
@@ -63,138 +30,98 @@ function geraIndividuos() {
     } while (j < totalCidades);
 
     novoIndividuo.push(cidadeInicial);
-
-    //        console.log(novoIndividuo);
-
-    var distancia = calculaDistancia(novoIndividuo);
-
-    arrDistancia.push(distancia);
+    distancia = calculaDistancia(novoIndividuo);
+    novoIndividuo.push(distancia);
 
     return novoIndividuo;
 }
 
-function dividePopulacao(populacao, distancias) {
+function dividePopulacao(populacao) {
+    customLog("SELECIONANDO MELHORES", 'info');
+
+    var popMelhores = [];
     var n = Math.trunc(populacao.length / 2);
-    var cloneDistancias = [...distancias];
     var p = 0;
-    var t = cloneDistancias.length;
 
-    arrMelhores = [];
-    arrPiores = [];
+    customLog("Ordenando", 'info');
+    populacao.sort(ordenar);
+    //    console.table(populacao);
 
-    console.log("%cSEPARANDO MELHORES DOS POPULACAO", 'color: red');
+    customLog("Coletando metade dos melhores", 'info');
 
-    for (var j = 0; j < n; j++) {
-        var menor = infinito;
-
-        //seleciona o melhor resultado
-        for (var i = 0; i < t; i++) {
-            if (cloneDistancias[i] < menor) {
-                menor = cloneDistancias[i];
-                p = i;
-            }
-        }
-
-        arrMelhores.push([p, cloneDistancias[p]]);
-        cloneDistancias[p] = infinito;
+    for (var i = 0; i < totalPopulacao / 2; i++) {
+        popMelhores.push(populacao[i]);
     }
 
-    //            console.log("%cmelhores: ", 'color: green');
-    //            console.table(arrMelhores);
+    //    console.table(popMelhores);
 
-    //    console.table(cloneDistancias);
-
-    for (var i = 0; i < t; i++) {
-        var menor = infinito;
-
-        if (cloneDistancias[i] < menor) {
-            arrPiores.push([i, cloneDistancias[i]]);
-        }
-    }
-
-    //        console.log("%cpiores: ", 'color: green');
-    //        console.table(arrPiores);
-
-    selecaoCrossover(arrMelhores);
+    return popMelhores;
 }
 
 function selecaoCrossover(melhoresInd) {
-    console.log("%cSELECAO PARA CROSSOVER", "color: red");
-    console.table("%cPOPULACAO", "color:green");
-    //    console.table(arrPopulacao);
+    customLog("SELECAO PARA CROSSOVER", 'info');
+    customLog("Melhor da geracao: " + melhoresInd[0], "Orange");
 
     var tamMelhores = melhoresInd.length;
     var popTemporaria = [];
 
     novaPopulacao = [];
 
-    for (var i = 0; i < tamMelhores; i++) {
-        novaPopulacao.push(arrPopulacao[melhoresInd[i][0]]);
+    for (var i = 0; i < preservacao; i++) {
+        novaPopulacao.push(melhoresInd[i]);
     }
 
-    console.table("%cNOVA POPULACAO", "color:green");
+    customLog("Preservando os melhores", 'info');
     //    console.table(novaPopulacao);
 
-    for (var i = 0; i < totalPopulacao - tamMelhores; i++) {
-        //        console.log("cruzando");
-        var ran1 = Math.floor(Math.random() * (arrMelhores.length));;
+    for (var i = 0; i < totalPopulacao - preservacao; i++) {
+        //            customLog("Cruzando", 'info');
+
+        var ran1 = Math.floor(Math.random() * (melhoresInd.length));;
         var ran2;
 
         do {
-            ran2 = Math.floor(Math.random() * (arrMelhores.length));
+            ran2 = Math.floor(Math.random() * (melhoresInd.length));
         } while (ran2 == ran1);
 
-        var pai = arrPopulacao[arrMelhores[ran1][0]];
-        var mae = arrPopulacao[arrMelhores[ran2][0]];
+        var pai = melhoresInd[ran1];
+        var mae = melhoresInd[ran2];
 
-        //                        console.log("%cSorteio","color:green");
-        //                        console.log("pai: " + pai + "=" + calculaDistancia(pai));
-        //                        console.log("mae: " + mae + "=" + calculaDistancia(mae));
+        //            customLog("Sorteados", 'info');
+        //            console.log("pai:     " + pai + "=(" + calculaDistancia(pai) + ")");
+        //            console.log("mae:     " + mae + "=(" + calculaDistancia(mae) + ")");
 
         filho1 = crossover(pai, mae);
         filho1 = mutacao(filho1);
-        //                console.log("%cfilho 1:", "color: green", filho1 + "=(" + calculaDistancia(filho1) + ")");
+        filho1.push(calculaDistancia(filho1));
+
+        //                    console.log("%cfilho 1:", "color: green", filho1 + "=(" + calculaDistancia(filho1) + ")");
 
         filho2 = crossover(mae, pai);
         filho2 = mutacao(filho2);
-        //        console.log("%cfilho 2:", "color: green", filho2 + "=(" + calculaDistancia(filho2) + ")");
+        filho2.push(calculaDistancia(filho2));
 
+        //                    console.log("%cfilho 2:", "color: green", filho2 + "=(" + calculaDistancia(filho2) + ")");
 
         popTemporaria.push(filho1);
         popTemporaria.push(filho2);
     }
 
-    //    for (var i = 0; i < popTemporaria.length; i++) {
-    //        var menor = infinito;
-    //
-    //        //seleciona o melhor resultado
-    //        for (var i = 0; i < t; i++) {
-    //            if (cloneDistancias[i] < menor) {
-    //                menor = cloneDistancias[i];
-    //                p = i;
-    //            }
-    //        }
-    //
-    //        arrMelhores.push([p, cloneDistancias[p]]);
-    //        cloneDistancias[p] = infinito;
-    //    }
+    customLog("Ordenando", 'info');
+    //    console.table(popTemporaria);
 
-    for (var i = 0; i < totalPopulacao - tamMelhores; i++) {
+    for (var i = 0; i < totalPopulacao - preservacao; i++) {
         novaPopulacao.push(popTemporaria[i]);
     }
 
-    arrPopulacao = novaPopulacao;
-
-    console.table("%cNOVA POPULACAO COMPLETA", "color:green");
+    customLog("Nova populacao", 'info');
     //    console.table(novaPopulacao);
 
-    atualizaDistancias();
-    var melhor = retornaMelhor();
+    return novaPopulacao;
 }
 
 function crossover(pai1, pai2) {
-    //    console.log("%cPAI 1: " + pai1 + " - PAI 2: " + pai2, "color:orange");
-
+    //    customLog("Local corte:" + localCorte, "error");
     var filho = [];
 
     for (var i = 0; i < localCorte; i++) {
@@ -207,17 +134,6 @@ function crossover(pai1, pai2) {
         }
     }
 
-    //   Add gene aleatorio
-    //    var genAdd = 0;
-    //    do {
-    //        var gen = Math.floor(Math.random() * (totalCidades));
-    //
-    //        if (filho.indexOf(pai2[gen]) == -1) {
-    //            filho.push(pai2[gen]);
-    //            genAdd++;
-    //        }
-    //    } while (genAdd < totalCidades - localCorte);
-
     filho.push(cidadeInicial);
 
     return filho;
@@ -227,7 +143,8 @@ function mutacao(filho) {
     var roleta = Math.floor(Math.random() * (100));
 
     if (roleta <= taxaMutacao) {
-        //        console.log("%cMUTACAO DETECTADA", "color: red");
+        //        customLog("MUTACAO DETECTADA", "error");
+
         var posicao;
         var gene = [];
         var g1, g2;
@@ -252,69 +169,16 @@ function mutacao(filho) {
     return filho;
 }
 
-function geraNovaPopulacao(pai, mae) {
-    //    var menorEncontrado = false;
+function selecionaPai(populacao) {
 
-    //    console.log("%cGERANDO NOVA POPULACAO", "color: red");
-
-    //    for (var i = 0; i < totalPopulacao; i++) {
-    //        if ((calculaDistancia(arrPopulacao[i])) < BEST) {
-    //            ARRBEST = arrPopulacao[i];
-    //            BEST = calculaDistancia(arrPopulacao[i]);
-    //            menorEncontrado = true;
-    //            geracoesSemOtimo = 0;
-    //        }
-    //    }
-
-    //    console.log(">>>BEST: " + ARRBEST + "=" + calculaDistancia(ARRBEST));
-
-    //    novaPopulacao = [];
-
-    //    for (var i = 0; i < totalPopulacao; i++) {
-    //        if (i != eleitoMelhor && i != eleitoPior) {
-    //            novaPopulacao.push(arrPopulacao[i]);
-    //        }
-    //    }
-
-    //    novaPopulacao.push(filho1);
-    //    novaPopulacao.push(filho2);
-
-    //    if (calculaDistancia(filho1) > BEST && calculaDistancia(filho2) > BEST) {
-    //        var r = Math.floor(Math.random() * (arrPiores.length));
-    //        novaPopulacao[arrPiores[r][0]] = ARRBEST;
-    //    }
-
-    //    arrPopulacao = novaPopulacao;
-    //    console.log(arrPopulacao);
-    //        console.log(arrDistancia);
 }
 
-function atualizaDistancias() {
-    console.log("%cATUALIZA DISTANCIAS", "color: red");
-    arrDistancia = [];
+function retornaMelhor(populacao) {
+    populacao.sort(ordenar);
+    customLog("MELHOR ENCONTRADO", "green");
+    console.log(populacao[0]);
 
-    for (var i = 0; i < totalPopulacao; i++) {
-        arrDistancia.push(calculaDistancia(arrPopulacao[i]));
-    }
-
-    //    console.log(arrDistancia);
-}
-
-function retornaMelhor() {
-    var menor = infinito;
-    var p = 0;
-
-    for (var i = 0; i < arrDistancia.length; i++) {
-        if (arrDistancia[i] < menor) {
-            menor = arrDistancia[i];
-            p = i;
-        }
-    }
-
-    console.log("%cmelhor da populacao", "color:red", arrPopulacao[p] + " total = " + menor);
-    //    console.log("%cmelhor global: ", "color:red", BEST);
-
-    return arrPopulacao[p];
+    return populacao[0];
 }
 
 function calculaDistancia(distancias) {
@@ -347,21 +211,72 @@ function arredondar(valor) {
     return Math.round(valor);
 }
 
+function ordenar(a, b) {
+    if (a[totalCidades + 1] === b[totalCidades + 1]) {
+        return 0;
+    } else {
+        return (a[totalCidades + 1] < b[totalCidades + 1]) ? -1 : 1;
+    }
+}
+
+function customLog(message, color = 'black') {
+    switch (color) {
+        case 'success':
+            color = 'Green'
+            break
+        case 'info':
+            color = 'Blue'
+            break;
+        case 'error':
+            color = 'Red'
+            break;
+        case 'warning':
+            color = 'Orange'
+            break;
+        default:
+            color = color
+    }
+
+    if (color == "Orange") {
+        console.log(`%c${message}`, `color:${color}`);
+    }
+
+    //    if (color == "Red") {
+    //        console.log(`%c${message}`, `color:${color}`);
+    //    }
+
+    //    console.log(`%c${message}`, `color:${color}`);
+}
+
 function main() {
-    geraPopulacaoInicial();
+    var populacaoInicial = geraPopulacaoInicial();
 
-    var i = 0;
+    for (var i = 0; i < geracoes; i++) {
+        customLog("======================================================== G" + i, "error");
 
-    do {
-        dividePopulacao(arrPopulacao, arrDistancia);
-        //        resultadosGeracoes.push(retornaMelhor());
-        console.log("%c======================================================== G" + i, "color:red");
-        i++;
-    } while (i < geracoes);
-//    console.table(novaPopulacao);
+        var melhoresIndividuos = dividePopulacao(populacaoInicial);
+        var novaPopulacao = selecaoCrossover(melhoresIndividuos);
 
+        populacaoInicial = novaPopulacao;
+    }
+    
+    var melhor = retornaMelhor(populacaoInicial);
+}
 
-    //    console.log(ARRBEST + " = " + calculaDistancia(ARRBEST));
+function testaMatriz() {
+    var msg = "";
+
+    for (var i = 0; i < mDist.length; i++) {
+        for (var j = 0; j < mDist[0].length; j++) {
+            msg += mDist[i][j] + " | ";
+
+            if (mDist[i][j] != mDist[j][i]) {
+                customLog("ERRO NA MATRIZ: " + i + "-" + j);
+            }
+        }
+
+        msg += "\n"
+    }
 }
 
 main();

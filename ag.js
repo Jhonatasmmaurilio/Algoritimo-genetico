@@ -12,7 +12,7 @@
 
 
 var objective = 80;
-var maxGerations = 2;
+var maxGerations = 1;
 var iterator = 0;
 var genesis = [];
 var maxCromons = 10;
@@ -121,6 +121,7 @@ var algoritmoGenetico = {
                     newCromon.number = Math.floor((father.number + mother.number) / 2);
                 }
                 newPopulation.push(newCromon);
+                console.table(newPopulation);
             }
             iterator++;
             
