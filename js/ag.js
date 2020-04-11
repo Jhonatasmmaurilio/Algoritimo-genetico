@@ -4,7 +4,7 @@ function geraPopulacaoInicial() {
     for (var i = 0; i < totalPopulacao; i++) {
         populacaoInicial.push(geraIndividuos());
     }
-
+    
     return populacaoInicial;
 }
 
@@ -16,6 +16,7 @@ function geraIndividuos() {
     novoIndividuo.push(cidadeInicial);
 
     do {
+         
         var ran = Math.floor(Math.random() * (totalCidades));
 
         if (novoIndividuo.indexOf(arrCidades[ran]) == -1) {
@@ -23,7 +24,7 @@ function geraIndividuos() {
             j++;
         }
     } while (j < totalCidades);
-
+    
     novoIndividuo.push(cidadeInicial);
     distancia = calculaDistancia(novoIndividuo);
     novoIndividuo.push(distancia);
@@ -183,33 +184,20 @@ function customLog(message, color = 'black') {
             color = color
     }
 
-    if (color == "Orange") {
-        console.log(`%c${message}`, `color:${color}`);
-    }
-
-    //    if (color == "Red") {
+    //    if (color == "Orange") {
     //        console.log(`%c${message}`, `color:${color}`);
     //    }
 
-    //    console.log(`%c${message}`, `color:${color}`);
-}
+//    if (color == "Red") {
+//        console.log(`%c${message}`, `color:${color}`);
+//    }
 
-function main() {
-    var populacaoInicial = geraPopulacaoInicial();
-
-    for (var i = 0; i < geracoes; i++) {
-        var melhoresIndividuos = dividePopulacao(populacaoInicial);
-        var novaPopulacao = selecaoCrossover(melhoresIndividuos);
-
-        populacaoInicial = novaPopulacao;
-    }
-
-    var melhor = retornaMelhor(populacaoInicial);
-    testaMatriz();
+        console.log(`%c${message}`, `color:${color}`);
 }
 
 function testaMatriz() {
     var msg = "";
+    var erro = false;
 
     for (var i = 0; i < mDist.length; i++) {
         for (var j = 0; j < mDist[0].length; j++) {
@@ -217,11 +205,37 @@ function testaMatriz() {
 
             if (mDist[i][j] != mDist[j][i]) {
                 customLog("ERRO NA MATRIZ: " + i + "-" + j);
+                erro = true;
             }
         }
 
         msg += "\n"
     }
+    
+    return erro;
 }
 
-main();
+function main() {
+    var erroMatriz = testaMatriz();
+    
+    if(erroMatriz) {
+        return false;
+    }
+    
+    arrCidades = [];
+    
+    for (var i = 1; i <= totalCidades; i++) {
+        arrCidades.push(i);
+    }
+    
+    var populacaoInicial = geraPopulacaoInicial();
+        
+    for (var i = 0; i < geracoes; i++) {
+        var melhoresIndividuos = dividePopulacao(populacaoInicial);
+        var novaPopulacao = selecaoCrossover(melhoresIndividuos);
+
+        populacaoInicial = novaPopulacao;
+    }
+
+    return retornaMelhor(populacaoInicial);
+}

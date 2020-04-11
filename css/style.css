@@ -1,0 +1,50 @@
+.selector-for-some-widget {
+    box-sizing: content-box;
+}
+
+.mt20 {
+    margin-top: 20px;
+}
+
+.p10 {
+    padding: 10px;
+}
+
+.bold {
+    font-weight: bold;
+}
+
+.df-center {
+    display: flex;
+    align-items: center;
+    align-content: center;
+    justify-content: center;
+}
+
+/*
+.btn {
+    margin: 5px;
+}
+*/
+
+.wd-30 {
+    width: 30%;
+}
+
+.wd-60 {
+    width: 60%;
+}
+
+.cidadebadge {
+    background: gray;
+    padding: 10px;
+    margin-right: 10px;
+}
+
+.matrizdistancia tr > td{
+    width: 50px !important;
+}
+
+.matrizdistancia input{
+    width: 40px;
+}
